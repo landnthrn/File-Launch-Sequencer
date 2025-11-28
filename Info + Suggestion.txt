@@ -38,7 +38,7 @@ How to launch the FileLaunchSequencer UI from any command prompt window:
 
 — Paste the folder path you copied
 
-Now you can launch the FileLaunchSequencer UI just by typing filelaunch in any Command Prompt window
+Now you can launch the FileLaunchSequencer UI just by typing `filelaunch` in any Command Prompt window
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
