@@ -21,26 +21,26 @@ Can be useful for other various tasks
 
 ---
 
-How to launch the FileLaunchSequencer UI from any command prompt window:
+### How to launch the FileLaunchSequencer UI from any command prompt window:
 
-— Create a folder in your Documents called `Scripts`
+- Create a folder in your Documents called `Scripts`
 
-— Create a folder inside `Scripts` called `FileLaunchSequencer`
+- Create a folder inside `Scripts` called `FileLaunchSequencer`
 
-— Place the `filelaunch.bat` inside the `FileLaunchSequencer`folder
+- Place the `filelaunch.bat` inside the `FileLaunchSequencer`folder
 
-— Copy the address of the `FileLaunchSequencer` folder, should look like:
+- Copy the address of the `FileLaunchSequencer` folder, should look like:
   `C:\Users\%USERNAME%\Documents\Scripts\FileLaunchSequencer`
 
-— Windows search for Enviorment Variables
+- Windows search for Enviorment Variables
 
-— In System Properties click Enviorment Varibles
+- In System Properties click Enviorment Varibles
 
-— In the User Varibles top box select Path > Edit > New
+- In the User Varibles top box select Path > Edit > New
 
-— Paste the folder path you copied
+- Paste the folder path you copied
 
-Now you can launch the FileLaunchSequencer UI just by typing filelaunch in any Command Prompt window
+Now you can launch the FileLaunchSequencer UI just by typing `filelaunch` in any Command Prompt window
 
 ---
 
