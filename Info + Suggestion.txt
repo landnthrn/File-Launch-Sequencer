@@ -1,0 +1,77 @@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A Windows batch script and command prompt UI that let's you create/save/run customized auto open sequences for a file type in a folder path. 
+
+Main Purpose: 
+Opening project files for software that allows you to have multiple projects open at once, 
+but doesn't allow you to actually open multiple projects at once. 
+This will automate having to open project files individually. 
+
+Can be useful for other various tasks
+
+— Scan a folder by file extension or paste file paths directly
+— Use exclusion filters to skip specific folders path(s), folder name(s), or keywords in filenames
+— Set configurable delays to prevent system overload from opening many files at once (also very useful for giving large programs time to launch like editing software...etc..) 
+— Works with any file type your system can open
+— Save presets to reuse later
+— Preview & edit presets inside the UI or by editing .json files
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+How to launch the FileLaunchSequencer UI from any command prompt window:
+
+— Create a folder in your Documents called `Scripts`
+
+— Create a folder inside `Scripts` called `FileLaunchSequencer`
+
+— Place the `filelaunch.bat` inside the `FileLaunchSequencer`folder
+
+— Copy the address of the `FileLaunchSequencer` folder, should look like:
+  C:\Users\%USERNAME%\Documents\Scripts\FileLaunchSequencer
+
+— Windows search for Enviorment Variables
+
+— In System Properties click Enviorment Varibles
+
+— In the User Varibles top box select Path > Edit > New
+
+— Paste the folder path you copied
+
+Now you can launch the FileLaunchSequencer UI just by typing filelaunch in any Command Prompt window
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Find more of my creations on Github:
+https://github.com/landnthrn?tab=repositories
+
+Support me on Buy Me a Coffee
+https://buymeacoffee.com/landn.thrn
+
+Paypal Donation:
+https://www.paypal.com/donate/?hosted_button_id=K4PLHFVBH7X8C
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
