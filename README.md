@@ -30,7 +30,7 @@ How to launch the FileLaunchSequencer UI from any command prompt window:
 — Place the `filelaunch.bat` inside the `FileLaunchSequencer`folder
 
 — Copy the address of the `FileLaunchSequencer` folder, should look like:
-  C:\Users\%USERNAME%\Documents\Scripts\FileLaunchSequencer
+  `C:\Users\%USERNAME%\Documents\Scripts\FileLaunchSequencer`
 
 — Windows search for Enviorment Variables
 
