@@ -2,7 +2,7 @@
 
 # File Launch Sequencer
 
-A Windows batch script and command prompt UI that let's you create/save/run customized auto open sequences for a file type in a folder path. 
+A Windows batch script and command prompt UI that let's you create, save, run customized auto open sequences for a file type in a folder path. 
 
 #### Main Purpose: 
 Opening project files for software that allows you to have multiple projects open at once, 
