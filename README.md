@@ -42,7 +42,7 @@ Can be useful for other various tasks
 
 - Paste the folder path you copied
 
-Now you can launch the FileLaunchSequencer UI just by typing `filelaunch` in any Command Prompt window
+Now you can launch the `FileLaunchSequencer` UI just by typing `filelaunch` in any Command Prompt window
 
 ---
 
