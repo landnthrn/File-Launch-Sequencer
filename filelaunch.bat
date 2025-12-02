@@ -133,7 +133,7 @@ REM Step 2.1: Folder Scan Options
 :ask_folder_scan_option
 set "folder_scan_option="
 echo.
-echo What folder options would you like to open by? Target Files In:
+echo What folder options would you like to scan/open by? Target files in:
 echo.
 echo 1 - All Subfolders of Target Folder
 echo 2 - First Forefront Subfolders of Target Folder
