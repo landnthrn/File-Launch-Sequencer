@@ -129,6 +129,38 @@ if exist "!scan_path!\" (
     goto :retry_scan_path
 )
 
+REM Step 2.1: Folder Scan Options
+:ask_folder_scan_option
+set "folder_scan_option="
+echo.
+echo What folder options would you like to open by? Target Files In:
+echo.
+echo 1 - All Subfolders of Target Folder
+echo 2 - First Forefront Subfolders of Target Folder
+echo 3 - Only Target Folder
+echo.
+echo M - Back to Menu
+echo.
+:retry_folder_scan_option
+set /p "folder_scan_option=Enter Command: "
+
+REM Handle menu return
+if /i "!folder_scan_option!"=="M" goto :eof
+
+REM Normalize input - remove spaces
+set "folder_scan_option=!folder_scan_option: =!"
+
+REM Validate input
+if "!folder_scan_option!"=="1" goto :after_folder_scan_option
+if "!folder_scan_option!"=="2" goto :after_folder_scan_option
+if "!folder_scan_option!"=="3" goto :after_folder_scan_option
+
+REM Invalid input
+echo Invalid. Enter 1, 2, 3, or M.
+goto :retry_folder_scan_option
+
+:after_folder_scan_option
+
 REM Step 3: Exclude Options
 :ask_exclude_options
 set "exclude_paths="
@@ -160,11 +192,14 @@ echo Invalid. Enter Y, S, or M.
 goto :retry_exclude_options
 
 :show_exclude_options
+REM Check if option 3 (Only Target Folder) is selected - skip folder excludes if so
+if "!folder_scan_option!"=="3" goto :skip_folder_excludes
+
 REM Step 3a: Exclude Folders by Path
 :ask_exclude_paths
 set "exclude_paths="
 echo.
-echo Would you like to exclude a folder in your target path?
+echo Would you like to exclude folder(s) in your target path?
 echo   Y - Yes
 echo   S - Skip
 echo   M - Back to Menu
@@ -224,7 +259,7 @@ REM Step 3b: Exclude Folders by Name
 :ask_exclude_names
 set "exclude_names="
 echo.
-echo Would you like to exclude folders in your target path by foldername?
+echo Would you like to exclude folder(s) in your target path by foldername?
 echo   Y - Yes
 echo   S - Skip
 echo   M - Back to Menu
@@ -274,11 +309,12 @@ set "exclude_names="
 
 :after_exclude_names
 
+:skip_folder_excludes
 REM Step 3c: Exclude Files by Keyword
 :ask_exclude_keywords
 set "exclude_keywords="
 echo.
-echo Would you like to exclude files that have a specific keyword in the filename?
+echo Would you like to exclude files that have specific keyword(s) in the filename?
 echo   Y - Yes
 echo   S - Skip
 echo   M - Back to Menu
@@ -500,6 +536,8 @@ REM Write parameters to temp file to avoid escaping issues
 echo !file_ext!> "%TEMP%\scan_ext.txt"
 echo !scan_path!> "%TEMP%\scan_path.txt"
 echo !LAST_FILES!> "%TEMP%\output_file.txt"
+if not defined folder_scan_option set "folder_scan_option=1"
+echo !folder_scan_option!> "%TEMP%\folder_scan_option.txt"
 if defined exclude_paths (
     echo !exclude_paths!> "%TEMP%\exclude_paths.txt"
 ) else (
@@ -516,10 +554,10 @@ if defined exclude_keywords (
     echo.> "%TEMP%\exclude_keywords.txt"
 )
 
-powershell -NoProfile -Command "$ext = Get-Content (Join-Path $env:TEMP 'scan_ext.txt') -Raw; $scanPath = Get-Content (Join-Path $env:TEMP 'scan_path.txt') -Raw; $outFile = Get-Content (Join-Path $env:TEMP 'output_file.txt') -Raw; $excludePathsStr = Get-Content (Join-Path $env:TEMP 'exclude_paths.txt') -Raw; $excludeNamesStr = Get-Content (Join-Path $env:TEMP 'exclude_names.txt') -Raw; $excludeKeywordsStr = Get-Content (Join-Path $env:TEMP 'exclude_keywords.txt') -Raw; $ext = $ext.Trim(); $scanPath = $scanPath.Trim().TrimEnd('\'); $outFile = $outFile.Trim(); $excludePathsStr = $excludePathsStr.Trim(); $excludeNamesStr = $excludeNamesStr.Trim(); $excludeKeywordsStr = $excludeKeywordsStr.Trim(); $files = Get-ChildItem -LiteralPath $scanPath -Filter ('*' + $ext) -Recurse -File -ErrorAction SilentlyContinue; if ($files) { $allFiles = $files; $filteredFiles = $files; if ($excludePathsStr -and $excludePathsStr.Length -gt 0 -and $excludePathsStr -ne '') { $excludePaths = @(); $excludePathsStr -split ',' | ForEach-Object { $p = $_.Trim(); if ($p -and $p.Length -gt 0) { if (-not [System.IO.Path]::IsPathRooted($p)) { $p = Join-Path $scanPath $p }; try { $normalized = [System.IO.Path]::GetFullPath($p).TrimEnd('\'); $excludePaths += $normalized } catch { } } }; if ($excludePaths.Count -gt 0) { $filteredFiles = $filteredFiles | Where-Object { $file = $_; $fileDir = Split-Path -Parent $file.FullName; $excluded = $false; foreach ($excludePath in $excludePaths) { if ($fileDir -eq $excludePath) { $excluded = $true; break } elseif ($fileDir.Length -gt $excludePath.Length) { $nextChar = $fileDir[$excludePath.Length]; if ($nextChar -eq '\' -and $fileDir.StartsWith($excludePath, [System.StringComparison]::OrdinalIgnoreCase)) { $excluded = $true; break } } }; -not $excluded } } }; if ($excludeNamesStr -and $excludeNamesStr.Length -gt 0 -and $excludeNamesStr -ne '') { $excludeNames = $excludeNamesStr -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }; if ($excludeNames.Count -gt 0) { $filteredFiles = $filteredFiles | Where-Object { $file = $_; $fileDir = Split-Path -Parent $file.FullName; $excluded = $false; $dirParts = $fileDir.Split('\'); foreach ($dirPart in $dirParts) { foreach ($excludeName in $excludeNames) { if ($dirPart -eq $excludeName) { $excluded = $true; break } } if ($excluded) { break } }; -not $excluded } } }; if ($excludeKeywordsStr -and $excludeKeywordsStr.Length -gt 0 -and $excludeKeywordsStr -ne '') { $excludeKeywords = $excludeKeywordsStr -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }; if ($excludeKeywords.Count -gt 0) { $filteredFiles = $filteredFiles | Where-Object { $file = $_; $fileName = $file.Name; $excluded = $false; foreach ($keyword in $excludeKeywords) { if ($fileName -like ('*' + $keyword + '*')) { $excluded = $true; break } }; -not $excluded } } }; $excludedCount = $allFiles.Count - $filteredFiles.Count; $utf8NoBom = New-Object System.Text.UTF8Encoding $false; [System.IO.File]::WriteAllLines($outFile, ($filteredFiles | ForEach-Object { $_.FullName }), $utf8NoBom); Write-Output ($filteredFiles.Count.ToString() + '|' + $excludedCount.ToString()) } else { Write-Output '0|0' }" > "%TEMP%\file_count.txt"
+powershell -NoProfile -Command "$ext = Get-Content (Join-Path $env:TEMP 'scan_ext.txt') -Raw; $scanPath = Get-Content (Join-Path $env:TEMP 'scan_path.txt') -Raw; $outFile = Get-Content (Join-Path $env:TEMP 'output_file.txt') -Raw; $folderScanOption = Get-Content (Join-Path $env:TEMP 'folder_scan_option.txt') -Raw; $excludePathsStr = Get-Content (Join-Path $env:TEMP 'exclude_paths.txt') -Raw; $excludeNamesStr = Get-Content (Join-Path $env:TEMP 'exclude_names.txt') -Raw; $excludeKeywordsStr = Get-Content (Join-Path $env:TEMP 'exclude_keywords.txt') -Raw; $ext = $ext.Trim(); $scanPath = $scanPath.Trim().TrimEnd('\'); $outFile = $outFile.Trim(); $folderScanOption = if ($folderScanOption) { $folderScanOption.Trim() } else { '1' }; $excludePathsStr = $excludePathsStr.Trim(); $excludeNamesStr = $excludeNamesStr.Trim(); $excludeKeywordsStr = $excludeKeywordsStr.Trim(); $scanPathNormalized = [System.IO.Path]::GetFullPath($scanPath); $scanDepth = ($scanPathNormalized.Split('\') | Where-Object { $_ }).Count; if ($folderScanOption -eq '3') { $files = Get-ChildItem -LiteralPath $scanPath -Filter ('*' + $ext) -File -ErrorAction SilentlyContinue } elseif ($folderScanOption -eq '2') { $allFiles = Get-ChildItem -LiteralPath $scanPath -Filter ('*' + $ext) -Recurse -File -ErrorAction SilentlyContinue; $files = $allFiles | Where-Object { $fileDir = Split-Path -Parent $_.FullName; $fileDirNormalized = [System.IO.Path]::GetFullPath($fileDir); $fileDepth = ($fileDirNormalized.Split('\') | Where-Object { $_ }).Count; $fileDepth -le ($scanDepth + 1) } } else { $files = Get-ChildItem -LiteralPath $scanPath -Filter ('*' + $ext) -Recurse -File -ErrorAction SilentlyContinue }; if ($files) { $allFiles = $files; $filteredFiles = $files; if ($excludePathsStr -and $excludePathsStr.Length -gt 0 -and $excludePathsStr -ne '') { $excludePaths = @(); $excludePathsStr -split ',' | ForEach-Object { $p = $_.Trim(); if ($p -and $p.Length -gt 0) { if (-not [System.IO.Path]::IsPathRooted($p)) { $p = Join-Path $scanPath $p }; try { $normalized = [System.IO.Path]::GetFullPath($p).TrimEnd('\'); $excludePaths += $normalized } catch { } } }; if ($excludePaths.Count -gt 0) { $filteredFiles = $filteredFiles | Where-Object { $file = $_; $fileDir = Split-Path -Parent $file.FullName; $excluded = $false; foreach ($excludePath in $excludePaths) { if ($fileDir -eq $excludePath) { $excluded = $true; break } elseif ($fileDir.Length -gt $excludePath.Length) { $nextChar = $fileDir[$excludePath.Length]; if ($nextChar -eq '\' -and $fileDir.StartsWith($excludePath, [System.StringComparison]::OrdinalIgnoreCase)) { $excluded = $true; break } } }; -not $excluded } } }; if ($excludeNamesStr -and $excludeNamesStr.Length -gt 0 -and $excludeNamesStr -ne '') { $excludeNames = $excludeNamesStr -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }; if ($excludeNames.Count -gt 0) { $filteredFiles = $filteredFiles | Where-Object { $file = $_; $fileDir = Split-Path -Parent $file.FullName; $excluded = $false; $dirParts = $fileDir.Split('\'); foreach ($dirPart in $dirParts) { foreach ($excludeName in $excludeNames) { if ($dirPart -eq $excludeName) { $excluded = $true; break } } if ($excluded) { break } }; -not $excluded } } }; if ($excludeKeywordsStr -and $excludeKeywordsStr.Length -gt 0 -and $excludeKeywordsStr -ne '') { $excludeKeywords = $excludeKeywordsStr -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }; if ($excludeKeywords.Count -gt 0) { $filteredFiles = $filteredFiles | Where-Object { $file = $_; $fileName = $file.Name; $excluded = $false; foreach ($keyword in $excludeKeywords) { if ($fileName -like ('*' + $keyword + '*')) { $excluded = $true; break } }; -not $excluded } } }; $excludedCount = $allFiles.Count - $filteredFiles.Count; $utf8NoBom = New-Object System.Text.UTF8Encoding $false; [System.IO.File]::WriteAllLines($outFile, ($filteredFiles | ForEach-Object { $_.FullName }), $utf8NoBom); Write-Output ($filteredFiles.Count.ToString() + '|' + $excludedCount.ToString()) } else { Write-Output '0|0' }" > "%TEMP%\file_count.txt"
 
 REM Cleanup temp files
-del "%TEMP%\scan_ext.txt" "%TEMP%\scan_path.txt" "%TEMP%\output_file.txt" "%TEMP%\exclude_paths.txt" "%TEMP%\exclude_names.txt" >nul 2>&1
+del "%TEMP%\scan_ext.txt" "%TEMP%\scan_path.txt" "%TEMP%\folder_scan_option.txt" "%TEMP%\output_file.txt" "%TEMP%\exclude_paths.txt" "%TEMP%\exclude_names.txt" >nul 2>&1
 
 REM Read file count and excluded count from PowerShell output
 set "excluded_count=0"
@@ -1530,6 +1568,7 @@ REM Save preset to JSON using PowerShell
 set "PRESET_FILE=!PRESET_DIR!\!preset_filename!.json"
 
 REM Initialize variables if not set
+if not defined folder_scan_option set "folder_scan_option=1"
 if not defined exclude_options_choice set "exclude_options_choice="
 if not defined exclude_paths set "exclude_paths="
 if not defined exclude_names set "exclude_names="
@@ -1545,6 +1584,7 @@ set "PS_SCRIPT=!TEMP_DIR!\save_preset_script.ps1"
     echo try {
     echo     $fileExt = Get-Content (Join-Path $env:TEMP 'preset_file_ext.txt'^) -Raw -ErrorAction SilentlyContinue
     echo     $scanPath = Get-Content (Join-Path $env:TEMP 'preset_scan_path.txt'^) -Raw -ErrorAction SilentlyContinue
+    echo     $folderScanOption = Get-Content (Join-Path $env:TEMP 'preset_folder_scan_option.txt'^) -Raw -ErrorAction SilentlyContinue
     echo     $excludeOptions = Get-Content (Join-Path $env:TEMP 'preset_exclude_options.txt'^) -Raw -ErrorAction SilentlyContinue
     echo     $excludePaths = Get-Content (Join-Path $env:TEMP 'preset_exclude_paths.txt'^) -Raw -ErrorAction SilentlyContinue
     echo     $excludeNames = Get-Content (Join-Path $env:TEMP 'preset_exclude_names.txt'^) -Raw -ErrorAction SilentlyContinue
@@ -1563,6 +1603,7 @@ set "PS_SCRIPT=!TEMP_DIR!\save_preset_script.ps1"
     echo     if (-not $outFile -or $outFile -eq '' -or -not $displayName -or $displayName -eq ''^) { Write-Output 'ERROR'; exit }
     echo     if ($fileExt^) { $fileExt = $fileExt.Trim^(^) } else { $fileExt = '' }
     echo     if ($scanPath^) { $scanPath = $scanPath.Trim^(^) } else { $scanPath = '' }
+    echo     if ($folderScanOption^) { $folderScanOption = $folderScanOption.Trim^(^) } else { $folderScanOption = '1' }
     echo     if ($excludeOptions^) { $excludeOptions = $excludeOptions.Trim^(^) } else { $excludeOptions = '' }
     echo     if ($excludePaths^) { $excludePaths = $excludePaths.Trim^(^) } else { $excludePaths = '' }
     echo     if ($excludeNames^) { $excludeNames = $excludeNames.Trim^(^) } else { $excludeNames = '' }
@@ -1572,7 +1613,7 @@ set "PS_SCRIPT=!TEMP_DIR!\save_preset_script.ps1"
     echo     if ($useBetween^) { $useBetween = $useBetween.Trim^(^) } else { $useBetween = '' }
     echo     if ($betweenDelay^) { $betweenDelay = $betweenDelay.Trim^(^) } else { $betweenDelay = '0' }
     echo     if ($fileSelection^) { $fileSelection = $fileSelection.Trim^(^) } else { $fileSelection = '' }
-    echo     $preset = @{ 'preset_name' = $displayName; 'file_ext' = $fileExt; 'scan_path' = $scanPath; 'exclude_options_choice' = $excludeOptions; 'exclude_paths' = $excludePaths; 'exclude_names' = $excludeNames; 'exclude_keywords' = $excludeKeywords; 'use_initial' = $useInitial; 'initial_delay' = $initialDelay; 'use_between' = $useBetween; 'between_delay' = $betweenDelay; 'file_selection' = $fileSelection; 'save_point' = 'complete'; 'created' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'^) }
+    echo     $preset = @{ 'preset_name' = $displayName; 'file_ext' = $fileExt; 'scan_path' = $scanPath; 'folder_scan_option' = $folderScanOption; 'exclude_options_choice' = $excludeOptions; 'exclude_paths' = $excludePaths; 'exclude_names' = $excludeNames; 'exclude_keywords' = $excludeKeywords; 'use_initial' = $useInitial; 'initial_delay' = $initialDelay; 'use_between' = $useBetween; 'between_delay' = $betweenDelay; 'file_selection' = $fileSelection; 'save_point' = 'complete'; 'created' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'^) }
     echo     $json = $preset ^| ConvertTo-Json
     echo     $utf8NoBom = New-Object System.Text.UTF8Encoding $false
     echo     [System.IO.File]::WriteAllText($outFile, $json, $utf8NoBom^)
@@ -1590,6 +1631,7 @@ if not exist "!PS_SCRIPT!" (
 REM Write all settings to temp files for PowerShell (use simple echo)
 > "%TEMP%\preset_file_ext.txt" echo !file_ext!
 > "%TEMP%\preset_scan_path.txt" echo !scan_path!
+> "%TEMP%\preset_folder_scan_option.txt" echo !folder_scan_option!
 > "%TEMP%\preset_exclude_options.txt" echo !exclude_options_choice!
 > "%TEMP%\preset_exclude_paths.txt" echo !exclude_paths!
 > "%TEMP%\preset_exclude_names.txt" echo !exclude_names!
@@ -1639,7 +1681,7 @@ if exist "!PS_SCRIPT!" (
 )
 
 REM Cleanup temp files (keep result file for now)
-del "%TEMP%\preset_file_ext.txt" "%TEMP%\preset_scan_path.txt" "%TEMP%\preset_exclude_options.txt" "%TEMP%\preset_exclude_paths.txt" "%TEMP%\preset_exclude_names.txt" "%TEMP%\preset_exclude_keywords.txt" "%TEMP%\preset_use_initial.txt" "%TEMP%\preset_initial_delay.txt" "%TEMP%\preset_use_between.txt" "%TEMP%\preset_between_delay.txt" "%TEMP%\preset_file_selection.txt" "%TEMP%\preset_output.txt" "%TEMP%\preset_display_name.txt" "%TEMP%\preset_save_result.txt" >nul 2>&1
+del "%TEMP%\preset_file_ext.txt" "%TEMP%\preset_scan_path.txt" "%TEMP%\preset_folder_scan_option.txt" "%TEMP%\preset_exclude_options.txt" "%TEMP%\preset_exclude_paths.txt" "%TEMP%\preset_exclude_names.txt" "%TEMP%\preset_exclude_keywords.txt" "%TEMP%\preset_use_initial.txt" "%TEMP%\preset_initial_delay.txt" "%TEMP%\preset_use_between.txt" "%TEMP%\preset_between_delay.txt" "%TEMP%\preset_file_selection.txt" "%TEMP%\preset_output.txt" "%TEMP%\preset_display_name.txt" "%TEMP%\preset_save_result.txt" >nul 2>&1
 
 if "!save_result!"=="SUCCESS" (
     if exist "!PRESET_FILE!" (
@@ -1945,23 +1987,24 @@ if not defined preset_file (
 
 REM Load preset using PowerShell
 echo !preset_file!> "%TEMP%\load_preset_file.txt"
-powershell -NoProfile -Command "$presetFile = Get-Content (Join-Path $env:TEMP 'load_preset_file.txt') -Raw; $presetFile = $presetFile.Trim(); $json = Get-Content -LiteralPath $presetFile -Raw -Encoding UTF8 | ConvertFrom-Json; $fileExt = if ($json.file_ext) { $json.file_ext } else { '' }; $scanPath = if ($json.scan_path) { $json.scan_path } else { '' }; $excludeOptions = if ($json.exclude_options_choice) { $json.exclude_options_choice } else { '' }; $excludePaths = if ($json.exclude_paths) { $json.exclude_paths } else { '' }; $excludeNames = if ($json.exclude_names) { $json.exclude_names } else { '' }; $excludeKeywords = if ($json.exclude_keywords) { $json.exclude_keywords } else { '' }; $useInitial = if ($json.use_initial) { $json.use_initial } else { '' }; $initialDelay = if ($json.initial_delay) { $json.initial_delay } else { '' }; $useBetween = if ($json.use_between) { $json.use_between } else { '' }; $betweenDelay = if ($json.between_delay) { $json.between_delay } else { '' }; Write-Output ($fileExt + '|' + $scanPath + '|' + $excludeOptions + '|' + $excludePaths + '|' + $excludeNames + '|' + $excludeKeywords + '|' + $useInitial + '|' + $initialDelay + '|' + $useBetween + '|' + $betweenDelay)" > "%TEMP%\load_preset_data.txt"
+powershell -NoProfile -Command "$presetFile = Get-Content (Join-Path $env:TEMP 'load_preset_file.txt') -Raw; $presetFile = $presetFile.Trim(); $json = Get-Content -LiteralPath $presetFile -Raw -Encoding UTF8 | ConvertFrom-Json; $fileExt = if ($json.file_ext) { $json.file_ext } else { '' }; $scanPath = if ($json.scan_path) { $json.scan_path } else { '' }; $folderScanOption = if ($json.folder_scan_option) { $json.folder_scan_option } else { '1' }; $excludeOptions = if ($json.exclude_options_choice) { $json.exclude_options_choice } else { '' }; $excludePaths = if ($json.exclude_paths) { $json.exclude_paths } else { '' }; $excludeNames = if ($json.exclude_names) { $json.exclude_names } else { '' }; $excludeKeywords = if ($json.exclude_keywords) { $json.exclude_keywords } else { '' }; $useInitial = if ($json.use_initial) { $json.use_initial } else { '' }; $initialDelay = if ($json.initial_delay) { $json.initial_delay } else { '' }; $useBetween = if ($json.use_between) { $json.use_between } else { '' }; $betweenDelay = if ($json.between_delay) { $json.between_delay } else { '' }; Write-Output ($fileExt + '|' + $scanPath + '|' + $folderScanOption + '|' + $excludeOptions + '|' + $excludePaths + '|' + $excludeNames + '|' + $excludeKeywords + '|' + $useInitial + '|' + $initialDelay + '|' + $useBetween + '|' + $betweenDelay)" > "%TEMP%\load_preset_data.txt"
 
 REM Parse loaded data
 set /p "load_line="<"%TEMP%\load_preset_data.txt"
 
 REM Split the line by pipe delimiter
-for /f "tokens=1,2,3,4,5,6,7,8,9,10 delims=|" %%A in ("!load_line!") do (
+for /f "tokens=1,2,3,4,5,6,7,8,9,10,11 delims=|" %%A in ("!load_line!") do (
     set "file_ext=%%A"
     set "scan_path=%%B"
-    set "exclude_options_choice=%%C"
-    set "exclude_paths=%%D"
-    set "exclude_names=%%E"
-    set "exclude_keywords=%%F"
-    set "use_initial=%%G"
-    set "initial_delay=%%H"
-    set "use_between=%%I"
-    set "between_delay=%%J"
+    set "folder_scan_option=%%C"
+    set "exclude_options_choice=%%D"
+    set "exclude_paths=%%E"
+    set "exclude_names=%%F"
+    set "exclude_keywords=%%G"
+    set "use_initial=%%H"
+    set "initial_delay=%%I"
+    set "use_between=%%J"
+    set "between_delay=%%K"
 )
 
 REM Handle empty values - PowerShell returns empty strings, batch treats them as spaces sometimes
@@ -1984,6 +2027,7 @@ if not exist "!scan_path!\" (
 REM Ensure all variables are properly set
 if not defined file_ext set "file_ext="
 if not defined scan_path set "scan_path="
+if not defined folder_scan_option set "folder_scan_option=1"
 if not defined exclude_options_choice set "exclude_options_choice="
 if not defined exclude_paths set "exclude_paths="
 if not defined exclude_names set "exclude_names="
@@ -2042,6 +2086,9 @@ echo !preset_file!> "%TEMP%\preview_preset_file.txt"
     echo Write-Output ('File Format: ' + $fileExt^)
     echo $scanPath = if ($json.scan_path^) { $json.scan_path } else { 'N/A' }
     echo Write-Output ('Target Folder: ' + $scanPath^)
+    echo $folderScanOption = if ($json.folder_scan_option^) { $json.folder_scan_option } else { '1' }
+    echo $folderScanText = if ($folderScanOption -eq '1'^) { 'All Subfolders' } elseif ($folderScanOption -eq '2'^) { 'First-Level Subfolders' } else { 'Target Folder Only' }
+    echo Write-Output ('Folder Scan: ' + $folderScanText^)
     echo Write-Output ''
     echo Write-Output 'Exclusion Settings:'
     echo $excludeOptions = if ($json.exclude_options_choice^) { $json.exclude_options_choice } else { 'No' }
