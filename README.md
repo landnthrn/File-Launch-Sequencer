@@ -21,7 +21,7 @@ Can be useful for other various tasks
 
 ---
 
-### How to Launch the FileLaunchSequencer UI From any Command Prompt Window:
+### How to Launch the `FileLaunchSequencer` UI From any Command Prompt Window:
 
 - Create a folder in your Documents called `Scripts`
 
