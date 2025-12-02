@@ -19,7 +19,7 @@ Can be useful for other various tasks
   *(also very useful for giving large programs time to launch like editing software...etc..)* 
 - Works with any file type your system can open
 - Save presets to reuse later
-- Preview & edit presets inside the UI or by editing .json files
+- Preview & edit presets inside the UI or by editing .json files  
 
 ---
 
@@ -41,6 +41,8 @@ Can be useful for other various tasks
 - In the User Varibles top box select Path > Edit > New
 
 - Paste the folder path you copied
+
+- Select OK > OK > OK to close Enviorment Variables  
 
 Now you can launch the `FileLaunchSequencer` UI just by typing `filelaunch` in any Command Prompt window
 
