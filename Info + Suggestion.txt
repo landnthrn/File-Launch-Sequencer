@@ -10,6 +10,7 @@ This will automate having to open project files individually.
 
 Can be useful for other various tasks
 
+What it do?
 — Scan a folder by file extension or paste file paths directly
 — Choose folder scan depth: All Subfolders, First-Level Subfolders Only, or Target Folder Only
 — Use exclusion filters to skip specific folders path(s), folder name(s), or keywords in filenames
