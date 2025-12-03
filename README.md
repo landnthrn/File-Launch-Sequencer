@@ -4,7 +4,7 @@
 
 **A Windows batch script and command prompt UI that let's you create, save, run customized auto open sequences** 
 
-## Main Purpose: 
+## Main Purposes: 
 Open a sequence of applications/any file types in a custom sequence or order
 
 Opening project files for software that allows you to have multiple projects open at once, 
