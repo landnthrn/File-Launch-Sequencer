@@ -133,10 +133,11 @@ REM Step 2.1: Folder Scan Options
 :ask_folder_scan_option
 set "folder_scan_option="
 echo.
-echo What folder options would you like to scan/open by? Target files in:
+echo What folder options would you like to scan/open by? 
+echo Target files in:
 echo.
-echo 1 - All Subfolders of Target Folder
-echo 2 - First Forefront Subfolders of Target Folder
+echo 1 - All Subfolders in Target Folder
+echo 2 - First Forefront Subfolders in Target Folder
 echo 3 - Only Target Folder
 echo.
 echo M - Back to Menu
@@ -225,7 +226,7 @@ goto :retry_exclude_paths
 
 :get_exclude_paths
 echo.
-echo Enter the folder path(s) you want excluded
+echo Enter the folder path(s) you want excluded (comma-separated if multiple)
 :retry_exclude_paths_input
 set /p "exclude_paths=Folder Path(s): "
 if /i "!exclude_paths!"=="M" goto :eof
@@ -1613,7 +1614,7 @@ set "PS_SCRIPT=!TEMP_DIR!\save_preset_script.ps1"
     echo     if ($useBetween^) { $useBetween = $useBetween.Trim^(^) } else { $useBetween = '' }
     echo     if ($betweenDelay^) { $betweenDelay = $betweenDelay.Trim^(^) } else { $betweenDelay = '0' }
     echo     if ($fileSelection^) { $fileSelection = $fileSelection.Trim^(^) } else { $fileSelection = '' }
-    echo     $preset = @{ 'preset_name' = $displayName; 'file_ext' = $fileExt; 'scan_path' = $scanPath; 'folder_scan_option' = $folderScanOption; 'exclude_options_choice' = $excludeOptions; 'exclude_paths' = $excludePaths; 'exclude_names' = $excludeNames; 'exclude_keywords' = $excludeKeywords; 'use_initial' = $useInitial; 'initial_delay' = $initialDelay; 'use_between' = $useBetween; 'between_delay' = $betweenDelay; 'file_selection' = $fileSelection; 'save_point' = 'complete'; 'created' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'^) }
+    echo     $preset = @{ 'preset_name' = $displayName; 'file_ext' = $fileExt; 'scan_path' = $scanPath; 'folder_scan_option' = $folderScanOption; 'exclude_options_choice' = $excludeOptions; 'exclude_paths' = $excludePaths; 'exclude_names' = $excludeNames; 'exclude_keywords' = $excludeKeywords; 'use_initial' = $useInitial; 'initial_delay' = $initialDelay; 'use_between' = $useBetween; 'between_delay' = $betweenDelay; 'file_selection' = $fileSelection; 'created' = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'^) }
     echo     $json = $preset ^| ConvertTo-Json
     echo     $utf8NoBom = New-Object System.Text.UTF8Encoding $false
     echo     [System.IO.File]::WriteAllText($outFile, $json, $utf8NoBom^)
