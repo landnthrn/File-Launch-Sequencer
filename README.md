@@ -1,4 +1,4 @@
-<img width="405" height="283" alt="FileLaunchSequencerUIPreview" src="https://github.com/user-attachments/assets/f8ee7b36-9085-43f1-980e-5812b3b0302d" />
+<img width="383" height="281" alt="File-Launch-Sequencer PREVIEW" src="https://github.com/user-attachments/assets/6df37cc2-e31c-44cc-ba50-bc08cc6a8c10" />
 
 # File Launch Sequencer
 
