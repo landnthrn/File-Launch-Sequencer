@@ -3,8 +3,9 @@ setlocal enabledelayedexpansion
 mode con: cols=140 lines=30
 
 REM ========================================
-REM File Launch Sequencer by landn.thrn
+REM          File Launch Sequencer
 REM ========================================
+REM by landn.thrn
 
 REM Initialize variables
 set "TEMP_DIR=%TEMP%\FileLaunchSequencer"
@@ -14,8 +15,9 @@ REM Main Menu Entry Point
 :main
 cls
 echo ========================================
-echo   File Launch Sequencer by landn.thrn
+echo          File Launch Sequencer
 echo ========================================
+echo by landn.thrn
 echo.
 echo Choose an option:
 echo.
