@@ -13,7 +13,7 @@ This can automate having to open project files individually.
 
 Can be useful for other various tasks
 
-- Scan a folder by file extension or paste file paths directly
+- Scan folder(s) for the target format(s) or paste file paths directly
 - Use exclusion filters to skip specific folders path(s), folder name(s), or keywords in filenames
 - Set configurable delays to prevent system overload from opening many files at once  
   *(also very useful for giving large programs time to launch like editing software...etc..)* 
