@@ -5,7 +5,7 @@
 **A Windows batch script and Command Prompt UI that let's you create, save, run customized auto open sequences** 
 
 ## Main Purposes: 
-Open a sequence of applications/any file types in a custom sequence or order
+Open a sequence of files or applications automatically
 
 Opening project files for software that allows you to have multiple projects open at once, 
 but doesn't allow you to actually open multiple projects at once. 
@@ -13,6 +13,7 @@ This can automate having to open project files individually.
 
 Can be useful for other various tasks
 
+### What it do?
 - Scan folder(s) for the target format(s) or paste file paths directly
 - Use exclusion filters to skip specific folders path(s), folder name(s), or keywords in filenames
 - Set configurable delays to prevent system overload from opening many files at once  
